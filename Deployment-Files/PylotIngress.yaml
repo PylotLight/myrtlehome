@@ -1,0 +1,30 @@
+# apiVersion: networking.k8s.io/v1
+# kind: IngressClass
+# metadata:
+#   name: sonarr
+# spec:
+#   controller: sonarr.myrtlehome.tk/sonarr
+#   parameters:
+#     apiGroup: sonarr.myrtlehome.tk
+#     kind: IngressParameters
+#     name: sonarr
+# ---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  annotations:
+    #kubernetes.io/ingress.class: "traefik"
+spec:
+  ingressClassName: sonarr
+  rules:
+  # - host: sonarr.myrtlehome.tk
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sonarr-service
+            port:
+              number: 80

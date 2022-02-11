@@ -1,0 +1,194 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarr
+  labels:
+    app: sonarr
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: sonarr     # indicates which Pods (with which labeles) need be handled by this Deployment
+  template:
+    metadata:         # indicates the metadata that will be added to each Pod
+      labels:
+        app: sonarr
+    spec:
+      containers:     # defines a running container inside the Pod
+        - name: sonarr
+          image: linuxserver/sonarr:latest
+          ports:
+            - containerPort: 8989   # which port of the container is exposed to the Pod
+          volumeMounts: #declare where to mount those volumes into containers
+            - name: config
+              mountPath: /config
+            - name: files
+              mountPath: /Files
+          env:
+            - name: PGID
+              value: "1000"
+            - name: PUID
+              value: "1000"
+      volumes: # specify the volumes to provide for the Pod
+        - name: config
+          hostPath: 
+            path: /mnt/data-pool/container-data/Sonarr
+            type: Directory
+        - name: files
+          hostPath:
+            path: /mnt/data-pool/Files
+            type: Directory
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prowlarr
+  labels:
+    app: internal
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: internal    # indicates which Pods (with which labeles) need be handled by this Deployment
+  template:
+    metadata:         # indicates the metadata that will be added to each Pod
+      labels:
+        app: internal
+    spec:
+      containers:     # defines a running container inside the Pod
+        - name: prowlerr
+          image: linuxserver/prowlarr:0.2.0-nightly
+          ports:
+            - containerPort: 80   # which port of the container is exposed to the Pod
+          volumeMounts:
+            - name: files
+              mountPath: /Files
+          env:
+            - name: TZ
+              value: "Australia/Melbourne"
+            - name: PGID
+              value: "1000"
+            - name: PUID
+              value: "1000"
+      volumes:
+        - name: files
+          hostPath:
+            path: /mnt/data-pool/Files
+            type: Directory
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: light-manager
+  labels:
+    app: internal
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: internal    # indicates which Pods (with which labeles) need be handled by this Deployment
+  template:
+    metadata:         # indicates the metadata that will be added to each Pod
+      labels:
+        app: internal
+    spec:
+      containers:     # defines a running container inside the Pod
+        - name: light-manager
+          image: light37/lightmanager:latest
+          ports:
+            - containerPort: 80   # which port of the container is exposed to the Pod
+          env:
+            - name: PGID
+              value: "1000"
+            - name: PUID
+              value: "1000"
+      volumes:
+        - name: files   
+          hostPath:
+            path: /mnt/data-pool/
+            type: Directory
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyfin
+  labels:
+    app: internal
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: internal    # indicates which Pods (with which labeles) need be handled by this Deployment
+  template:
+    metadata:         # indicates the metadata that will be added to each Pod
+      labels:
+        app: internal
+    spec:
+      containers:     # defines a running container inside the Pod
+        - name: jellyfin
+          image: linuxserver/jellyfin:latest
+          ports:
+            - containerPort: 80   # which port of the container is exposed to the Pod
+          env:
+            - name: PGID
+              value: "1000"
+            - name: PUID
+              value: "1000"
+      volumes:
+        - name: files
+          hostPath:
+            path: /mnt/data-pool/container-Data/jellyfin
+            type: Directory
+#---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: nginx-proxy-manager
+#   labels:
+#     app: external
+# spec:
+#   replicas: 1
+#   strategy:
+#     type: RollingUpdate
+#   selector:
+#     matchLabels:
+#       app: external    # indicates which Pods (with which labeles) need be handled by this Deployment
+#   template:
+#     metadata:         # indicates the metadata that will be added to each Pod
+#       labels:
+#         app: external
+#     spec:
+#       containers:     # defines a running container inside the Pod
+#         - name: nginx-proxy-manager
+#           image: jc21/nginx-proxy-manager:latest
+#           ports:
+#           - containerPort: 81
+#           - containerPort: 80
+#           - containerPort: 443   # which port of the container is exposed to the Pod
+#           volumeMounts:
+#             - name: files
+#               mountPath: /Files
+#             - name: cert
+#               mountPath: /etc/letsencrypt
+#           env:
+#             - name: PGID
+#               value: "1000"
+#             - name: PUID
+#               value: "1000"
+#       volumes:
+#         - name: cert
+#           hostPath:
+#             path: /mnt/data-pool/container-data/Nginx-Proxy-Manager
+#             type: Directory
+#         - name: files
+#           hostPath:
+#             path: /mnt/data-pool/Files/
+#             type: Directory
